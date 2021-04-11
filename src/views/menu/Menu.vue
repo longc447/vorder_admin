@@ -23,7 +23,38 @@
     width="30%"
     :before-close="menuDialog.close"
   >
-    <span>这是一段信息</span>
+    <el-form label-width="50px" width="80%">
+      <el-form-item label="菜名">
+        <el-input></el-input>
+      </el-form-item>
+      <el-form-item label="备注">
+        <el-input></el-input>
+      </el-form-item>
+      <el-form-item label="标签">
+        <el-input></el-input>
+      </el-form-item>
+      <el-form-item label="图片">
+        <el-upload
+          class="upload-demo"
+          :on-preview="menuDialog.handlePreview"
+          :on-remove="menuDialog.handleRemove"
+          :before-remove="menuDialog.beforeRemove"
+          multiple
+          :auto-upload="false"
+          :limit="3"
+          list-type="picture-card"
+          :on-exceed="menuDialog.handleExceed"
+          :file-list="menuDialog.fileList"
+        >
+          <i class="el-icon-plus"></i>
+          <template #tip>
+            <div class="el-upload__tip">
+              只能上传 jpg/png 文件，且不超过 500kb
+            </div>
+          </template>
+        </el-upload>
+      </el-form-item>
+    </el-form>
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="menuDialog.isShow = false">取 消</el-button>
@@ -33,25 +64,24 @@
       </span>
     </template>
   </el-dialog>
-
-  <div class="menuform" v-if="menuShow">添加菜单</div>
 </template>
 
-<script lang="typescript">
-import { onMounted, reactive, ref } from "vue";
-import http from "@/config/telnet/http";
-import api from "@/config/telnet/api";
-export default {
+<script lang="ts">
+import { defineComponent, getCurrentInstance, onMounted, reactive } from "vue";
+export default defineComponent({
   data() {
     return {};
   },
   setup() {
+    const { ctx }:any = getCurrentInstance();
+    console.log();
+
     //表格
     let tableData = reactive({
       data: [],
     });
     async function getDate() {
-      let a = await http.get(api.get("menu"));
+      let a = await ctx.$http.get(ctx.$Api.get("menu"));
       tableData.data = a.data;
     }
     //弹出框
@@ -60,21 +90,59 @@ export default {
       handle: () => {
         menuDialog.isShow = !menuDialog.isShow;
       },
-      close: () => {
-        
+      close: () => {},
+      form: [
+        {
+          type: "input",
+          label: "菜名",
+          value: "",
+        },
+        {
+          type: "input",
+          label: "图片",
+          value: "",
+        },
+        {
+          type: "input",
+          label: "描述",
+          value: "",
+        },
+        {
+          type: "input",
+          label: "角标",
+          value: "",
+        },
+      ],
+      fileList: [],
+      formRule: {},
+      handleRemove: (file:any, fileList:any) => {
+        console.log(file, fileList);
+      },
+      handlePreview: (file:any) => {
+        console.log(file);
+      },
+      handleExceed: (files:any, fileList:any) => {
+        ctx.$message.warning(
+          `当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${
+            files.length + fileList.length
+          } 个文件`
+        );
+      },
+      beforeRemove: (file:any, fileList:any) => {
+        // console.log(this)
+        return ctx.$confirm(`确定移除 ${file.name}？`);
       },
     });
 
     onMounted(() => {
       getDate();
     });
-    
     return {
       tableData,
       menuDialog,
     };
   },
-};
+});
 </script>
 
 <style lang="scss" scope>

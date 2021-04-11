@@ -11,4 +11,4 @@ let app = createApp(App)
 app.use(store).use(router).use(ElementPlus).mount('#app')
 
 app.config.globalProperties.$Api = Api;
-app.config.globalProperties.$Http=Http;
+app.config.globalProperties.$http=Http;
