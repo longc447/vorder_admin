@@ -25,25 +25,25 @@
   >
     <el-form label-width="50px" width="80%">
       <el-form-item label="菜名">
-        <el-input></el-input>
+        <el-input v-model="menuDialog.values.name"></el-input>
       </el-form-item>
       <el-form-item label="备注">
-        <el-input></el-input>
+        <el-input v-model="menuDialog.values.detail"></el-input>
       </el-form-item>
       <el-form-item label="标签">
-        <el-input></el-input>
+        <el-input v-model="menuDialog.values.tag"></el-input>
       </el-form-item>
       <el-form-item label="图片">
         <el-upload
           class="upload-demo"
-          :on-preview="menuDialog.handlePreview"
-          :on-remove="menuDialog.handleRemove"
-          :before-remove="menuDialog.beforeRemove"
+          :on-preview="handlePreview"
+          :on-remove="handleRemove"
+          :before-remove="beforeRemove"
           multiple
           :auto-upload="false"
-          :limit="3"
+          :limit="1"
           list-type="picture-card"
-          :on-exceed="menuDialog.handleExceed"
+          :on-exceed="handleExceed"
           :file-list="menuDialog.fileList"
         >
           <i class="el-icon-plus"></i>
@@ -58,9 +58,7 @@
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="menuDialog.isShow = false">取 消</el-button>
-        <el-button type="primary" @click="menuDialog.isShow = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="formSubmit">确 定</el-button>
       </span>
     </template>
   </el-dialog>
@@ -73,7 +71,7 @@ export default defineComponent({
     return {};
   },
   setup() {
-    const { ctx }:any = getCurrentInstance();
+    const { ctx }: any = getCurrentInstance();
     console.log();
 
     //表格
@@ -90,7 +88,6 @@ export default defineComponent({
       handle: () => {
         menuDialog.isShow = !menuDialog.isShow;
       },
-      close: () => {},
       form: [
         {
           type: "input",
@@ -113,33 +110,46 @@ export default defineComponent({
           value: "",
         },
       ],
+      values: {
+        name: "",
+        detail: "",
+        tag: "",
+        pic: [],
+      },
       fileList: [],
       formRule: {},
-      handleRemove: (file:any, fileList:any) => {
-        console.log(file, fileList);
-      },
-      handlePreview: (file:any) => {
-        console.log(file);
-      },
-      handleExceed: (files:any, fileList:any) => {
-        ctx.$message.warning(
-          `当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${
-            files.length + fileList.length
-          } 个文件`
-        );
-      },
-      beforeRemove: (file:any, fileList:any) => {
-        // console.log(this)
-        return ctx.$confirm(`确定移除 ${file.name}？`);
-      },
     });
 
+    function handleRemove(file: any, fileList: any) {
+      console.log(file, fileList);
+    }
+    function handlePreview(file: any) {
+      console.log(file);
+    }
+    function handleExceed(files: string | any[], fileList: string | any[]) {
+      ctx.$message.warning(
+        `超出数量无法继续添加`
+      );
+    }
+    function beforeRemove(file: { name: any }, fileList: any) {
+      return ctx.$confirm(`确定移除 ${file.name}？`);
+    }
+    function formSubmit() {
+      // menuDialog.values.pic=menuDialog.fileList；
+      console.log(menuDialog.values);
+      ctx.$http.post(ctx.$Api.get("menu"),menuDialog.values)
+    }
     onMounted(() => {
       getDate();
     });
     return {
       tableData,
       menuDialog,
+      formSubmit,
+      beforeRemove,
+      handleExceed,
+      handlePreview,
+      handleRemove,
     };
   },
 });
