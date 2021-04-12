@@ -14,6 +14,17 @@
       <el-table-column prop="_id" label="id" width="180"> </el-table-column>
       <el-table-column prop="name" label="姓名" width="180"> </el-table-column>
       <el-table-column prop="pic" label="图片"> </el-table-column>
+      <el-table-column fixed="right" label="操作" width="120">
+        <template #default="scope">
+          <el-button
+            @click.prevent="deleteRow(scope.$index, tableData.data)"
+            type="text"
+            size="small"
+          >
+            <i class="el-icon-delete"></i>
+          </el-button>
+        </template>
+      </el-table-column>
     </el-table>
   </div>
 
@@ -127,9 +138,7 @@ export default defineComponent({
       console.log(file);
     }
     function handleExceed(files: string | any[], fileList: string | any[]) {
-      ctx.$message.warning(
-        `超出数量无法继续添加`
-      );
+      ctx.$message.warning(`超出数量无法继续添加`);
     }
     function beforeRemove(file: { name: any }, fileList: any) {
       return ctx.$confirm(`确定移除 ${file.name}？`);
@@ -137,7 +146,12 @@ export default defineComponent({
     function formSubmit() {
       // menuDialog.values.pic=menuDialog.fileList；
       console.log(menuDialog.values);
-      ctx.$http.post(ctx.$Api.get("menu"),menuDialog.values)
+      ctx.$http.post(ctx.$Api.get("menu"), menuDialog.values);
+    }
+    function deleteRow(index:any, rows:any) {
+      rows.splice(index, 1);
+      ctx.$http.delete(ctx.$Api.get("menu"))
+      console.log(`删除了第${index}条：${JSON.stringify(rows)}`)
     }
     onMounted(() => {
       getDate();
@@ -150,6 +164,7 @@ export default defineComponent({
       handleExceed,
       handlePreview,
       handleRemove,
+      deleteRow
     };
   },
 });

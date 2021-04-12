@@ -24,5 +24,11 @@ class http {
         this.Data=param;
         return await this.tel();
     }
+    async delete(url: string,param:object) {
+        this.Method="DELETE";
+        this.Url=url;
+        this.Data=param;
+        return await this.tel();
+    }
 }
 export default new http();
