@@ -75,7 +75,7 @@
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="menuDialog.isShow = false">取 消</el-button>
+        <el-button @click="closeForm">取 消</el-button>
         <el-button type="primary" @click="formSubmit">确 定</el-button>
       </span>
     </template>
@@ -96,7 +96,7 @@ export default defineComponent({
     let tableData = reactive({
       data: [],
     });
-    async function getDate() {
+    async function getData() {
       let a = await ctx.$http.get(ctx.$Api.get("menu"));
       tableData.data = a;
     }
@@ -150,23 +150,53 @@ export default defineComponent({
     function beforeRemove(file: { name: any }, fileList: any) {
       return ctx.$confirm(`确定移除 ${file.name}？`);
     }
-    function formSubmit() {
+    async function formSubmit() {
       // menuDialog.values.pic=menuDialog.fileList；
       console.log(menuDialog.values);
-      ctx.$http.post(ctx.$Api.get("menu"), menuDialog.values);
-    }
-    async function deleteRow(index: any, rows: any) {
-      let isDel=ctx.$confirm("确定删除吗？","删除后不可恢复")
-      // console.log(isDel)
-      isDel=await new Promise((resolve,reject)=>{
-        isDel.then((e:any) => {
-          resolve(e)
-        }).catch((err:any)=>{
-          return;
-        })
-      })
 
-      if(!isDel)return;
+      let result;
+      if (Object.keys(menuDialog.values).indexOf("_id") == -1) {
+        result = await ctx.$http.post(ctx.$Api.get("menu"), menuDialog.values);
+      } else {
+        result = await ctx.$http.update(ctx.$Api.get("menu"), menuDialog.values);
+      }
+      if (result.code == "101") {
+        ctx.$message.success(result.msg);
+      } else {
+        ctx.$message.error(result.msg);
+      }
+      closeForm();
+      getData();
+    }
+
+    function closeForm() {
+      menuDialog.isShow = false;
+      setForm({
+        name: "",
+        detail: "",
+        tag: "",
+        pic: [],
+      });
+    }
+
+    function setForm(form: any) {
+      menuDialog.values = form;
+    }
+
+    async function deleteRow(index: any, rows: any) {
+      let isDel = ctx.$confirm("确定删除吗？", "删除后不可恢复");
+      // console.log(isDel)
+      isDel = await new Promise((resolve, reject) => {
+        isDel
+          .then((e: any) => {
+            resolve(e);
+          })
+          .catch((err: any) => {
+            return;
+          });
+      });
+
+      if (!isDel) return;
       let id = rows[index]["_id"];
 
       let result = await ctx.$http.delete(ctx.$Api.get("menu") + `/${id}`);
@@ -179,14 +209,17 @@ export default defineComponent({
     }
     async function updateRow(index: any, rows: any) {
       console.log(rows[index], `更新事件`);
+      menuDialog.isShow = true;
+      setForm(rows[index]);
     }
     onMounted(() => {
-      getDate();
+      getData();
     });
     return {
       tableData,
       menuDialog,
       formSubmit,
+      closeForm,
       beforeRemove,
       handleExceed,
       handlePreview,
