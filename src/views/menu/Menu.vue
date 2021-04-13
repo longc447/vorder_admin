@@ -156,17 +156,29 @@ export default defineComponent({
       ctx.$http.post(ctx.$Api.get("menu"), menuDialog.values);
     }
     async function deleteRow(index: any, rows: any) {
+      let isDel=ctx.$confirm("确定删除吗？","删除后不可恢复")
+      // console.log(isDel)
+      isDel=await new Promise((resolve,reject)=>{
+        isDel.then((e:any) => {
+          resolve(e)
+        }).catch((err:any)=>{
+          return;
+        })
+      })
+
+      if(!isDel)return;
       let id = rows[index]["_id"];
 
-      let result = await ctx.$http.delete(ctx.$Api.get("menu")+`/${id}`);
+      let result = await ctx.$http.delete(ctx.$Api.get("menu") + `/${id}`);
       if (result.code == 401) {
         rows.splice(index, 1);
+        ctx.$message.success(result.msg);
       } else {
-        ctx.$message(result.msg)
+        ctx.$message.error(result.msg);
       }
     }
-    async function updateRow(index:any,rows:any){
-
+    async function updateRow(index: any, rows: any) {
+      console.log(rows[index], `更新事件`);
     }
     onMounted(() => {
       getDate();
@@ -179,7 +191,8 @@ export default defineComponent({
       handleExceed,
       handlePreview,
       handleRemove,
-      deleteRow,updateRow
+      deleteRow,
+      updateRow,
     };
   },
 });
@@ -202,3 +215,7 @@ export default defineComponent({
   border: 1xp solid #666666;
 }
 </style>
+
+function res(res: any, arg1: (any: any) => void) {
+  throw new Error("Function not implemented.");
+}
