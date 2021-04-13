@@ -23,6 +23,13 @@
           >
             <i class="el-icon-delete"></i>
           </el-button>
+          <el-button
+            @click.prevent="updateRow(scope.$index, tableData.data)"
+            type="text"
+            size="small"
+          >
+            <i class="el-icon-plus"></i>
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -91,7 +98,7 @@ export default defineComponent({
     });
     async function getDate() {
       let a = await ctx.$http.get(ctx.$Api.get("menu"));
-      tableData.data = a.data;
+      tableData.data = a;
     }
     //弹出框
     let menuDialog = reactive({
@@ -148,10 +155,18 @@ export default defineComponent({
       console.log(menuDialog.values);
       ctx.$http.post(ctx.$Api.get("menu"), menuDialog.values);
     }
-    function deleteRow(index:any, rows:any) {
-      rows.splice(index, 1);
-      ctx.$http.delete(ctx.$Api.get("menu"))
-      console.log(`删除了第${index}条：${JSON.stringify(rows)}`)
+    async function deleteRow(index: any, rows: any) {
+      let id = rows[index]["_id"];
+
+      let result = await ctx.$http.delete(ctx.$Api.get("menu")+`/${id}`);
+      if (result.code == 401) {
+        rows.splice(index, 1);
+      } else {
+        ctx.$message(result.msg)
+      }
+    }
+    async function updateRow(index:any,rows:any){
+
     }
     onMounted(() => {
       getDate();
@@ -164,7 +179,7 @@ export default defineComponent({
       handleExceed,
       handlePreview,
       handleRemove,
-      deleteRow
+      deleteRow,updateRow
     };
   },
 });

@@ -7,11 +7,14 @@ class http {
      };
      Data: any = {};
     async tel() {
-        return await axios({
+        let result= await axios({
           method: this.Method,
           url: this.Url,
           params:this.Data||null
         });
+        return result.data
+        // return
+        debugger
     }
     async get(url: string) {
         this.Method="GET";
@@ -26,6 +29,12 @@ class http {
     }
     async delete(url: string,param:object) {
         this.Method="DELETE";
+        this.Url=url;
+        this.Data=param;
+        return await this.tel();
+    }
+    async update(url:string,param:object){
+        this.Method="PUT";
         this.Url=url;
         this.Data=param;
         return await this.tel();
